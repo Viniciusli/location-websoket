@@ -12,39 +12,56 @@ io.on('connection', socket => {
     console.log(socket.id);
 
     socket.on('sendLocation', data => {
-        let index = devices.findIndex((item, i) => {
-            return item.id = data.id
-        })
+        console.log(data);
+        console.log(devices);
 
-        if (index === -1) {
-            devices.push({
-                "id": socket.id,
-                "locations": [{
-                    "lat": data.lat,
-                    "lng": data.lng
-                }] 
+        if (devices.length < 20) {
+            let index = devices.findIndex((item, i) => {
+                console.log(item.id);
+                return item.id = data.id
             })
+            console.log(index);
+    
+            if (index === -1) {
+                console.log('inside if');
+                devices.push({
+                    "id": data.id,
+                    "location": data.location
+                })
+                console.log(devices);
+            } else {
+                console.log('inside else');
+                devices[index].location = data.location
+                console.log(devices);
+            }
+            console.log('after conditional');
+    
+            console.log(`Locations:`);
+            console.log(devices);
+            console.log('----------------------------------------------------');
         } else {
-            devices[index].locations.push({
-                "lat": data.lat,
-                "lng": data.lng
-            })
+            console.log('too many devices connected');
         }
 
-        socket.use(([event, token], next) => {
-            if (!token === _token) {
-                return next(new Error('unauthorized event'))
-            }
-            socket.broadcast.emit('locations', devices)
-            next()
-        })
+        
+        // socket.use(([event, token], next) => {
+        //     if (!token === _token) {
+        //         return next(new Error('unauthorized event'))
+        //     }
+        //     socket.broadcast.emit('locations', devices)
+        //     next()
+        // })
 
-        socket.on('error', err => {
-            if (err && err.message === 'unauthorized event') {
-                socket.disconnect()
-            }
-        })
+        // socket.on('error', err => {
+        //     if (err && err.message === 'unauthorized event') {
+        //         socket.disconnect()
+        //     }
+        // })
+    })
+
+    socket.on('disconnect', () => {
+        devices.pop()
     })
 })
 
-server.listen(3000)
+server.listen(5000, () => console.log(`server is running on http://localhost:5000`))
